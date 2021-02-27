@@ -2,12 +2,35 @@ const UNPAUSE_MILLIS = 15 /* min */ * 60 /* sec */ * 1000 /* millis */;
 
 const pauseUrl = browser.runtime.getURL('pause.html');
 
+// TODO: add as preference file
 const pausedTLDs = [
-    'foxnews.com',
-    'nytimes.com',
-    'economist.com',
+    'allsides.com',
     'boardgamegeek.com',
+    'dicebreaker.com',
+    'dicetower.com',
+    'economist.com',
+    'foxnews.com',
+    'games-workshop.com',
+    'gamestop.com',
+    'instagram.com',
+    'kotaku.com',
+    'meeplelikeus.co.uk/',
+    'newegg.com',
+    'news.google.com',
+    'news.ycombinator.com',
+    'nytimes.com',
+    'polygon.com',
     'reddit.com',
+    'rockpapershotgun.com',
+    'shutupandsitdown.com',
+    'store.steampowered.com',
+    'twitter.com',
+    'videogamegeek.com',
+    'vox.com',
+    'warhammer-community.com',
+    'youtube.com',
+
+    //www.twitch.tv/directory/game/Board%20Games'
 ];
 
 var isAddonPaused = true;
@@ -30,7 +53,6 @@ function maybeRedirectRequest(request) {
 }
 
 function onMessage(message, sender, sendResponse) {
-    console.log('message ' + message);
     // todo: validate it's the right message.
 
     // todo: pause only specific uris.
