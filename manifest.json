@@ -16,6 +16,8 @@
     },
 
     "web_accessible_resources": [
-        "pause.html"
+        "pause.html",
+        "pause.js",
+        "pause.css"
     ]
   }
