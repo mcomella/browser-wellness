@@ -2,6 +2,7 @@ const UNPAUSE_MILLIS = 15 /* min */ * 60 /* sec */ * 1000 /* millis */;
 
 const pauseUrl = browser.runtime.getURL('pause.html');
 
+// TODO: add as preference file
 const pausedTLDs = [
 ];
 
@@ -25,7 +26,6 @@ function maybeRedirectRequest(request) {
 }
 
 function onMessage(message, sender, sendResponse) {
-    console.log('message ' + message);
     // todo: validate it's the right message.
 
     // todo: pause only specific uris.
