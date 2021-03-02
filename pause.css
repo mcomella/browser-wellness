@@ -1,0 +1,24 @@
+body {
+    /* color scheme from https://coolors.co/546a76-88a0a8-b4ceb3-dbd3c9-fad4d8 */
+    background-color: #88A0A8;
+    color: #eeeeee;
+}
+
+#content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#unpause {
+    visibility: hidden;
+    opacity: 0;
+    animation-name: fadeIn;
+    animation-duration: 3s;
+    animation-delay: 3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
