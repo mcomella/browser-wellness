@@ -6,10 +6,16 @@
     "description": "TODO",
 
     "permissions": [
+        "storage",
         "webRequest",
         "webRequestBlocking",
         "<all_urls>"
     ],
+
+    "options_ui": {
+        "page": "options/options.html",
+        "browser_style": true
+    },
 
     "background": {
         "scripts": ["background.js"]
