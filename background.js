@@ -20,6 +20,7 @@ function maybeRedirectRequest(request) {
         return;
     }
 
+    // TODO: remove urls from history
     const encodedRequestUrl = encodeURI(request.url);
     const redirectUrl = pauseUrl + '?request=' + encodedRequestUrl;
     return {redirectUrl: redirectUrl};
