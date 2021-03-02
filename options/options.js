@@ -23,6 +23,10 @@ function saveSites(e) {
     const toSet = {};
     toSet[KEY_PAUSED_SITES] = pausedSitesTextarea.value;
     storage.set(toSet);
+
+    browser.runtime.sendMessage({
+        cmd: 'onSaveSites',
+    });
 }
 
 document.addEventListener("DOMContentLoaded", restoreOptions);

@@ -27,11 +27,11 @@ function maybeRedirectRequest(request) {
 }
 
 function onMessage(message, sender, sendResponse) {
-    // todo: validate it's the right message.
-
-    // todo: pause only specific uris.
-    isAddonPaused = false;
-    setTimeout(e => isAddonPaused = true, UNPAUSE_MILLIS);
+    if (message.cmd === 'unpauseSite') {
+        // todo: pause only specific uris.
+        isAddonPaused = false;
+        setTimeout(e => isAddonPaused = true, UNPAUSE_MILLIS);
+    }
 }
 
 browser.runtime.onMessage.addListener(onMessage);

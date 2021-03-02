@@ -15,8 +15,12 @@ function getSiteName() {
 }
 
 function unpauseSite() {
-    browser.runtime.sendMessage(getOriginalRequestUrlEncoded());
-    document.location = decodeURI(getOriginalRequestUrlEncoded());
+    const originalRequestUrl = getOriginalRequestUrlEncoded();
+    browser.runtime.sendMessage({
+        cmd: 'unpauseSite',
+        value: originalRequestUrl
+    });
+    document.location = decodeURI(originalRequestUrl);
 }
 
 function setAnimations() {
