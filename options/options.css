@@ -1,0 +1,10 @@
+label {
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+#paused-sites {
+    width: 98%;
+    height: 20em;
+    margin: 4px 0;
+}
