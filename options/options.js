@@ -1,4 +1,4 @@
-const KEY_PAUSED_SITES = 'paused-sites';
+const KEY_PAUSED_SITES = 'pausedSites';
 
 const pausedSitesTextarea = document.getElementById('paused-sites');
 const saveButton = document.getElementById('save');
