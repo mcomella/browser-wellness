@@ -1,0 +1,5 @@
+variable duration blocking
+insert reason for unblocking
+works on single-page apps like youtube
+
+remove blocked urls from history
