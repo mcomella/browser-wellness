@@ -1,20 +1,18 @@
-const UNPAUSE_MILLIS = 15 /* min */ * 60 /* sec */ * 1000 /* millis */;
+const UNPAUSE_MINS = 15;
+const UNPAUSE_MILLIS = UNPAUSE_MINS * 60 /* sec */ * 1000 /* millis */;
 
-const pauseUrl = browser.runtime.getURL('pause.html');
+const pauseUrl = browser.runtime.getURL('pause.html'); // cached just in case many requests are made.
 
-var pausedTLDs = []; // set later.
-
-var isAddonPaused = true;
+var userPausedSites = new Map(); // set later.
 
 function maybeRedirectRequest(request) {
-    if (!isAddonPaused ||
-            request.type != 'main_frame') {
+    if (request.type != 'main_frame') {
         return;
     }
 
-    const domain = new URL(request.url).host;
-    const isDomainPaused = !!pausedTLDs.find(paused => domain.endsWith(paused));
-    if (!isDomainPaused) {
+    const userPausedSite = getUserPausedSiteFromUrl(request.url);
+    const isSitePaused = userPausedSite && !userPausedSite.isUnpaused;
+    if (!isSitePaused) {
         return;
     }
 
@@ -25,20 +23,44 @@ function maybeRedirectRequest(request) {
 }
 
 function unpauseSite(site) {
-    // todo: pause only specific uris.
-    isAddonPaused = false;
-    setTimeout(e => isAddonPaused = true, UNPAUSE_MILLIS);
+    console.debug(`unpausing site for ${UNPAUSE_MINS} minutes: ${site}`);
+    const userPausedSite = getUserPausedSiteFromUrl(site);
+    if (!userPausedSite) {
+        console.error(`Unexpectedly unable to unpause, site not found: ${site}`);
+        return;
+    }
+
+    userPausedSite.isUnpaused = true;
+    setTimeout(e => {
+        console.debug(`pausing site: ${site}`);
+        userPausedSite.isUnpaused = false;
+    }, UNPAUSE_MILLIS);
 }
 
 function reloadSites() {
     browser.storage.local.get({pausedSites: true}).then(keys => {
-        const sites = keys.pausedSites;
-        pausedTLDs = sites.split('\n');
+        userPausedSites = new Map(); // reset data structure.
+
+        const sitesOnDisk = keys.pausedSites.split('\n');
+        sitesOnDisk.forEach(site => {
+            userPausedSites.set(site, {
+                isUnpaused: false,
+            });
+        });
         console.debug('Paused TLDs loaded');
     }, error => {
         console.error('error reloading sites');
         console.error(error)
     });
+}
+
+function getUserPausedSiteFromUrl(url) {
+    const domain = new URL(url).host;
+    const matchingKey = Array.from(userPausedSites.keys()).find(paused => domain.endsWith(paused));
+    if (!matchingKey) {
+        return null;
+    }
+    return userPausedSites.get(matchingKey);
 }
 
 function onMessage(message, sender, sendResponse) {
