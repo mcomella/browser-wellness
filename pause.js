@@ -1,6 +1,8 @@
 const PAUSE_MILLIS = 5000;
 
-const unpauseButton = document.getElementById('unpause');
+const unpauseHiddenElements = document.getElementsByClassName('unpause-hidden');
+const unpauseButton = document.getElementById('unpause-button');
+const unpauseDurationText = document.getElementById('unpause-duration');
 const siteNameElement = document.getElementById('site-name');
 
 function getOriginalRequestUrlEncoded() {
@@ -15,22 +17,36 @@ function getSiteName() {
 }
 
 function unpauseSite() {
+    const unpauseDuration = parseInt(unpauseDurationText.value);
+    if (!unpauseDuration || unpauseDuration < 1) {
+        alert('Must specify a valid positive integer for unpause duration.')
+        return;
+    }
+
     const originalRequestUrl = getOriginalRequestUrlEncoded();
     browser.runtime.sendMessage({
         cmd: 'unpauseSite',
-        value: originalRequestUrl
+        value: {
+            url: originalRequestUrl,
+            unpauseMin: unpauseDuration,
+        }
     });
     document.location = decodeURI(originalRequestUrl);
 }
 
 function setAnimations() {
     // start delay is set in CSS.
-    unpauseButton.addEventListener('animationstart', () => {
-        unpauseButton.style.visibility = 'visible';
+    Array.from(unpauseHiddenElements).forEach(e => {
+        e.addEventListener('animationstart', () => {
+            e.style.visibility = 'visible';
+        });
+
+        e.addEventListener('animationend', () => {
+            e.style.opacity = 1; // otherwise will revert to 0
+        });
     });
 
     unpauseButton.addEventListener('animationend', () => {
-        unpauseButton.style.opacity = 1; // otherwise will revert to 0
         unpauseButton.addEventListener('click', unpauseSite);
     });
 }
