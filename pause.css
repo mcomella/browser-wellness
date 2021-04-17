@@ -10,7 +10,7 @@ body {
     text-align: center;
 }
 
-#unpause {
+.unpause-hidden {
     visibility: hidden;
     opacity: 0;
     animation-name: fadeIn;
