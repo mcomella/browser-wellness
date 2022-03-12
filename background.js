@@ -1,10 +1,34 @@
-const pauseUrl = browser.runtime.getURL('pause.html'); // cached just in case many requests are made.
+const MORNING_START = new Date(1900, 01, 01, /* hours */ 7);
+const MORNING_END = new Date(1900, 01, 01, /* hours */ 10);
 
-var userPausedSites = new Map(); // set later.
+// cached just in case many requests are made.
+const blockedUrl = browser.runtime.getURL('blocked.html');
+const pauseUrl = browser.runtime.getURL('pause.html');
+
+// These are set later.
+var userBlockedSites = [];
+var userMorningSites = [];
+var userPausedSites = new Map();
 
 function maybeRedirectRequest(request) {
     if (request.type != 'main_frame') {
         return;
+    }
+
+    const requestDomain = new URL(request.url).host;
+    const isSiteBlocked = userBlockedSites.find(site => requestDomain.endsWith(site));
+    if (isSiteBlocked) {
+        return {redirectUrl: blockedUrl};
+    }
+
+    const isMorningSite = userMorningSites.find(site => requestDomain.endsWith(site));
+    if (isMorningSite) {
+        const timeNow = new Date();
+        timeNow.setFullYear(1900, 01, 01); // set dmy equal so we can compare times only.
+        const isMorning = timeNow >= MORNING_START && timeNow <= MORNING_END;
+        if (!isMorning) {
+            return {redirectUrl: blockedUrl};
+        }
     }
 
     const userPausedSite = getUserPausedSiteFromUrl(request.url);
@@ -36,12 +60,20 @@ function unpauseSite(siteObj) {
 }
 
 function reloadSites() {
-    browser.storage.local.get({pausedSites: true}).then(keys => {
+    const toGet = {
+        blockedSites: true,
+        morningSites: true,
+        pausedSites: true,
+    };
+    browser.storage.local.get(toGet).then(keys => {
+        userBlockedSites = keys.blockedSites ? keys.blockedSites.split('\n') : [];
+        userMorningSites = keys.morningSites ? keys.morningSites.split('\n') : [];
+
         userPausedSites = new Map(); // reset data structure.
 
         // TODO: keys.pausedSites.split not a function if not loaded from disk.
-        const sitesOnDisk = keys.pausedSites.split('\n');
-        sitesOnDisk.forEach(site => {
+        const pausedSitesOnDisk = keys.pausedSites.split('\n');
+        pausedSitesOnDisk.forEach(site => {
             userPausedSites.set(site, {
                 unpauseUntil: new Date(),
             });

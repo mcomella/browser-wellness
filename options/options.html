@@ -8,8 +8,15 @@
     <form>
         <!-- TODO: photon style http://design.firefox.com/photon/
         chrome://browser/content/extension-mac.css -->
-        <label>Paused sites</label><br>
+        <label>Blocked sites</label><br>
+        <textarea id="blocked-sites"></textarea>
+
+        <label>Challenged sites</label><br>
         <textarea id="paused-sites"></textarea>
+
+        <label>Morning only sites</label><br>
+        <textarea id="morning-sites"></textarea>
+
         <button id="save" type="submit">Save</button>
     </form>
     <script src="options.js"></script>
