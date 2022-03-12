@@ -11,11 +11,11 @@ body {
 }
 
 .unpause-hidden {
-    visibility: hidden;
+    /* visibility: hidden;
     opacity: 0;
     animation-name: fadeIn;
     animation-duration: 3s;
-    animation-delay: 3s;
+    animation-delay: 3s; */
 }
 
 @keyframes fadeIn {

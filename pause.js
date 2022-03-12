@@ -4,6 +4,10 @@ const unpauseHiddenElements = document.getElementsByClassName('unpause-hidden');
 const unpauseButton = document.getElementById('unpause-button');
 const unpauseDurationText = document.getElementById('unpause-duration');
 const siteNameElement = document.getElementById('site-name');
+const problemStatementElement = document.getElementById('problem-statement');
+const problemSolutionElement = document.getElementById('problem-solution');
+
+var problemSolution = -1;
 
 function getOriginalRequestUrlEncoded() {
     const queryParam = 'request=';
@@ -20,6 +24,13 @@ function unpauseSite() {
     const unpauseDuration = parseInt(unpauseDurationText.value);
     if (!unpauseDuration || unpauseDuration < 1) {
         alert('Must specify a valid positive integer for unpause duration.')
+        return;
+    }
+
+    const userSolution = parseInt(problemSolutionElement.value);
+    if (userSolution !== problemSolution) {
+        alert('Invalid solution.');
+        generateProblem();
         return;
     }
 
@@ -51,5 +62,23 @@ function setAnimations() {
     });
 }
 
+// via https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#getting_a_random_number_between_two_values
+function randomInt(min, max) {
+    return Math.round(Math.random() * (max - min) + min);
+}
+
+function generateProblem() {
+    const values = [];
+    for (var i = 0; i < 3; i++) {
+        values[i] = randomInt(0, 999);
+    }
+
+    problemSolution = values.reduce((acc, v) => acc + v, 0);
+
+    problemStatementElement.textContent = 'Solve the problem: ' + values.join(' + ');
+}
+
 siteNameElement.innerText = getSiteName(); // TODO: is duplicated with unpause logic.
-setAnimations();
+// setAnimations();
+unpauseButton.addEventListener('click', unpauseSite);
+generateProblem();
