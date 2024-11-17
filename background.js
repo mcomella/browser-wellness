@@ -1,5 +1,5 @@
-const MORNING_START = new Date(1900, 01, 01, /* hours */ 7);
-const MORNING_END = new Date(1900, 01, 01, /* hours */ 10);
+const MORNING_START = new Date(1900, 1, 1, /* hours */ 7);
+const MORNING_END = new Date(1900, 1, 1, /* hours */ 10);
 
 // cached just in case many requests are made.
 const blockedUrl = browser.runtime.getURL('blocked.html');
@@ -24,7 +24,7 @@ function maybeRedirectRequest(request) {
     const isMorningSite = userMorningSites.find(site => requestDomain.endsWith(site));
     if (isMorningSite) {
         const timeNow = new Date();
-        timeNow.setFullYear(1900, 01, 01); // set dmy equal so we can compare times only.
+        timeNow.setFullYear(1900, 1, 1); // set dmy equal so we can compare times only.
         const isMorning = timeNow >= MORNING_START && timeNow <= MORNING_END;
         if (!isMorning) {
             return {redirectUrl: blockedUrl};
