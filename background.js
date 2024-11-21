@@ -4,15 +4,16 @@ const pauseUrl = browser.runtime.getURL('pause.html');
 
 // These are set later.
 var userBlockedSites = [];
-var userPausedSites = new Map();
+var userPausedSites = [];
 
 function maybeRedirectRequest(request) {
     if (request.type != 'main_frame') {
         return;
     }
 
-    const requestDomain = new URL(request.url).host;
-    const isSiteBlocked = userBlockedSites.find(site => requestDomain.endsWith(site));
+    // This logic is duplicated for pause in getUserPausedSiteFromUrl.
+    const urlNoProtocol = removeUrlProtocol(request.url);
+    const isSiteBlocked = userBlockedSites.find(site => urlNoProtocol.startsWith(site));
     if (isSiteBlocked) {
         return {redirectUrl: blockedUrl};
     }
@@ -27,6 +28,12 @@ function maybeRedirectRequest(request) {
     const encodedRequestUrl = encodeURI(request.url);
     const redirectUrl = pauseUrl + '?request=' + encodedRequestUrl;
     return {redirectUrl: redirectUrl};
+}
+
+function removeUrlProtocol(str) {
+    const url = new URL(str);
+    const protocolLen = url.protocol.length + 2; // +2 to add '//' divider.
+    return str.slice(protocolLen);
 }
 
 function unpauseSite(siteObj) {
@@ -52,18 +59,10 @@ function reloadSites() {
     };
     browser.storage.local.get(toGet).then(keys => {
         userBlockedSites = !keys.blockedSites ? [] : keys.blockedSites.split('\n');
-
-        userPausedSites = new Map(); // reset data structure.
-        if (!keys.pausedSites) {
-            return;
-        }
-
-        const pausedSitesOnDisk = keys.pausedSites.split('\n');
-        pausedSitesOnDisk.forEach(site => {
-            userPausedSites.set(site, {
-                unpauseUntil: new Date(),
-            });
-        });
+        userPausedSites = !keys.pausedSites ? [] : keys.pausedSites.split('\n').map(site => { return {
+            site,
+            unpauseUntil: new Date(),
+        };})
         console.debug('Paused TLDs loaded');
     }, error => {
         console.error('error reloading sites');
@@ -72,12 +71,9 @@ function reloadSites() {
 }
 
 function getUserPausedSiteFromUrl(url) {
-    const domain = new URL(url).host;
-    const matchingKey = Array.from(userPausedSites.keys()).find(paused => domain.endsWith(paused));
-    if (!matchingKey) {
-        return null;
-    }
-    return userPausedSites.get(matchingKey);
+    // This logic is duplicated for blockedSites in maybeRedirectRequest.
+    const urlNoProtocol = removeUrlProtocol(url);
+    return userPausedSites.find(({site}) => urlNoProtocol.startsWith(site));
 }
 
 function onMessage(message, sender, sendResponse) {
