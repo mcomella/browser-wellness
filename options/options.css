@@ -3,7 +3,7 @@ label {
     font-size: 14pt;
 }
 
-#paused-sites, #blocked-sites, #morning-sites {
+#paused-sites, #blocked-sites {
     width: 98%;
     height: 20em;
     margin: 4px 0;

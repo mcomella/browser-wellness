@@ -1,13 +1,9 @@
-const MORNING_START = new Date(1900, 1, 1, /* hours */ 7);
-const MORNING_END = new Date(1900, 1, 1, /* hours */ 10);
-
 // cached just in case many requests are made.
 const blockedUrl = browser.runtime.getURL('blocked.html');
 const pauseUrl = browser.runtime.getURL('pause.html');
 
 // These are set later.
 var userBlockedSites = [];
-var userMorningSites = [];
 var userPausedSites = new Map();
 
 function maybeRedirectRequest(request) {
@@ -19,16 +15,6 @@ function maybeRedirectRequest(request) {
     const isSiteBlocked = userBlockedSites.find(site => requestDomain.endsWith(site));
     if (isSiteBlocked) {
         return {redirectUrl: blockedUrl};
-    }
-
-    const isMorningSite = userMorningSites.find(site => requestDomain.endsWith(site));
-    if (isMorningSite) {
-        const timeNow = new Date();
-        timeNow.setFullYear(1900, 1, 1); // set dmy equal so we can compare times only.
-        const isMorning = timeNow >= MORNING_START && timeNow <= MORNING_END;
-        if (!isMorning) {
-            return {redirectUrl: blockedUrl};
-        }
     }
 
     const userPausedSite = getUserPausedSiteFromUrl(request.url);
@@ -62,12 +48,10 @@ function unpauseSite(siteObj) {
 function reloadSites() {
     const toGet = {
         blockedSites: true,
-        morningSites: true,
         pausedSites: true,
     };
     browser.storage.local.get(toGet).then(keys => {
         userBlockedSites = keys.blockedSites ? keys.blockedSites.split('\n') : [];
-        userMorningSites = keys.morningSites ? keys.morningSites.split('\n') : [];
 
         userPausedSites = new Map(); // reset data structure.
 
