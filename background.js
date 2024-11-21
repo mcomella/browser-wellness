@@ -3,8 +3,10 @@ const blockedUrl = browser.runtime.getURL('blocked.html');
 const pauseUrl = browser.runtime.getURL('pause.html');
 
 // These are set later.
-var userBlockedSites = [];
-var userPausedSites = [];
+let userBlockedSites = [];
+let userBlockedIncludes = [];
+let userPausedSites = [];
+let userPausedIncludes = [];
 
 function maybeRedirectRequest(request) {
     if (request.type != 'main_frame') {
@@ -12,8 +14,7 @@ function maybeRedirectRequest(request) {
     }
 
     // This logic is duplicated for pause in getUserPausedSiteFromUrl.
-    const urlNoProtocol = removeUrlProtocol(request.url);
-    const isSiteBlocked = userBlockedSites.find(site => urlNoProtocol.startsWith(site));
+    const isSiteBlocked = getRestrictedSite(userBlockedSites, userBlockedIncludes, (s) => s, request.url);
     if (isSiteBlocked) {
         return {redirectUrl: blockedUrl};
     }
@@ -30,10 +31,40 @@ function maybeRedirectRequest(request) {
     return {redirectUrl: redirectUrl};
 }
 
-function removeUrlProtocol(str) {
-    const url = new URL(str);
-    const protocolLen = url.protocol.length + 2; // +2 to add '//' divider.
-    return str.slice(protocolLen);
+function getRestrictedSite(restrictedSites, includedSites, getUrl, site) {
+    function removeUrlProtocol() {
+        const url = new URL(site);
+        const protocolLen = url.protocol.length + 2; // +2 to add '//' divider.
+        return site.slice(protocolLen);
+    }
+
+    const urlNoProtocol = removeUrlProtocol(site);
+    let longestBlockedSite = false;
+    let longestBlockedLen = 0;
+    for (let site of restrictedSites) {
+        const url = getUrl(site);
+        if (urlNoProtocol.startsWith(url) && url.length > longestBlockedLen) {
+            longestBlockedSite = site;
+            longestBlockedLen = url.length;
+        }
+    }
+
+    if (!longestBlockedSite) {
+        return false;
+    }
+
+    let longestInclude = '';
+    for (let site of includedSites) {
+        if (urlNoProtocol.startsWith(site) && site.length > longestInclude.length) {
+            longestInclude = site;
+        }
+    }
+
+    if (longestInclude.length > getUrl(longestBlockedSite).length) {
+        console.debug('include overrides blocked site');
+        return false;
+    }
+    return longestBlockedSite;
 }
 
 function unpauseSite(siteObj) {
@@ -58,8 +89,13 @@ function reloadSites() {
         pausedSites: false,
     };
     browser.storage.local.get(toGet).then(keys => {
-        userBlockedSites = !keys.blockedSites ? [] : keys.blockedSites.split('\n');
-        userPausedSites = !keys.pausedSites ? [] : keys.pausedSites.split('\n').map(site => { return {
+        const blockedSites = !keys.blockedSites ? [] : keys.blockedSites.split('\n');
+        userBlockedSites = blockedSites.filter(site => !site.startsWith('+'));
+        userBlockedIncludes = blockedSites.filter(site => site.startsWith('+')).map(site => site.slice(1));
+
+        const pausedSites = !keys.pausedSites ? [] : keys.pausedSites.split('\n');
+        userPausedIncludes = pausedSites.filter(site => site.startsWith('+')).map(site => site.slice(1));
+        userPausedSites = pausedSites.filter(site => !site.startsWith('+')).map(site => { return {
             site,
             unpauseUntil: new Date(),
         };})
@@ -71,9 +107,7 @@ function reloadSites() {
 }
 
 function getUserPausedSiteFromUrl(url) {
-    // This logic is duplicated for blockedSites in maybeRedirectRequest.
-    const urlNoProtocol = removeUrlProtocol(url);
-    return userPausedSites.find(({site}) => urlNoProtocol.startsWith(site));
+    return getRestrictedSite(userPausedSites, userPausedIncludes, (s) => s.site, url);
 }
 
 function onMessage(message, sender, sendResponse) {
