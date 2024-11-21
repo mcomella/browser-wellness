@@ -8,27 +8,30 @@ const saveButton = document.getElementById('save');
 const storage = browser.storage.local;
 
 function restoreOptions() {
-    const toGet = {};
-    toGet[KEY_BLOCKED_SITES] = true;
-    toGet[KEY_PAUSED_SITES] = true;
+    const toGet = {
+        blockedSites: false, // these will be the default values if the keys are not found.
+        pausedSites: false,
+    };
 
     storage.get(toGet).then(keys => {
-        blockedSitesTextarea.value = keys[KEY_BLOCKED_SITES];
-        pausedSitesTextarea.value = keys[KEY_PAUSED_SITES];
+        if (keys.blockedSites) {
+            blockedSitesTextarea.value = keys.blockedSites;
+        }
+        if (keys.pausedSites) {
+            pausedSitesTextarea.value = keys.pausedSites;
+        }
     }, error => {
         console.error('unable to fetch options: ' + error);
-        textarea.innerText = 'DON\'T CLICK SAVE.\nERROR: ' + error;
+        blockedSitesTextarea.innerText = 'DON\'T CLICK SAVE.\nERROR: ' + error;
     });
 }
 
 function saveSites(e) {
     e.preventDefault();
-
-    const toSet = {};
-    toSet[KEY_BLOCKED_SITES] = blockedSitesTextarea.value;
-    toSet[KEY_PAUSED_SITES] = pausedSitesTextarea.value;
-    storage.set(toSet);
-
+    storage.set({
+        blockedSites: blockedSitesTextarea.value,
+        pausedSites: pausedSitesTextarea.value,
+    });
     browser.runtime.sendMessage({
         cmd: 'onSaveSites',
     });

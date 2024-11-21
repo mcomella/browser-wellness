@@ -47,15 +47,17 @@ function unpauseSite(siteObj) {
 
 function reloadSites() {
     const toGet = {
-        blockedSites: true,
-        pausedSites: true,
+        blockedSites: false, // these will be the default values if the keys are not found.
+        pausedSites: false,
     };
     browser.storage.local.get(toGet).then(keys => {
-        userBlockedSites = keys.blockedSites ? keys.blockedSites.split('\n') : [];
+        userBlockedSites = !keys.blockedSites ? [] : keys.blockedSites.split('\n');
 
         userPausedSites = new Map(); // reset data structure.
+        if (!keys.pausedSites) {
+            return;
+        }
 
-        // TODO: keys.pausedSites.split not a function if not loaded from disk.
         const pausedSitesOnDisk = keys.pausedSites.split('\n');
         pausedSitesOnDisk.forEach(site => {
             userPausedSites.set(site, {
