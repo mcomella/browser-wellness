@@ -5,3 +5,5 @@ web-ext-artifacts/
 
 # Secrets
 .jwt*
+# Should this be ignored?
+.amo-upload-uuid

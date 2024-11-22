@@ -5,6 +5,12 @@
 
     "description": "TODO",
 
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{1b815122-9114-406b-8426-65960851cf09}"
+        }
+    },
+
     "permissions": [
         "storage",
         "webRequest",
