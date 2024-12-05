@@ -51,20 +51,28 @@ function getRedirectUrl(url) {
 }
 
 function getRestrictedSite(restrictedSites, includedSites, getUrl, site) {
-    function removeUrlProtocol() {
-        const url = new URL(site);
+    function cleanUpUrl() {
+        let url = new URL(site);
+
+        // Remove protocol.
         const protocolLen = url.protocol.length + 2; // +2 to add '//' divider.
-        return site.slice(protocolLen);
+        url = site.slice(protocolLen);
+
+        if (url.startsWith('www.')) {
+            url = url.slice('www.'.length);
+        }
+
+        return url;
     }
 
-    const urlNoProtocol = removeUrlProtocol(site);
+    const urlCleaned = cleanUpUrl(site);
     let longestBlockedSite = false;
     let longestBlockedLen = 0;
-    for (let site of restrictedSites) {
-        const url = getUrl(site);
-        if (urlNoProtocol.startsWith(url) && url.length > longestBlockedLen) {
-            longestBlockedSite = site;
-            longestBlockedLen = url.length;
+    for (let restrictedSite of restrictedSites) {
+        const restrictedUrl = getUrl(restrictedSite);
+        if (urlCleaned.startsWith(restrictedUrl) && restrictedUrl.length > longestBlockedLen) {
+            longestBlockedSite = restrictedSite;
+            longestBlockedLen = restrictedUrl.length;
         }
     }
 
@@ -74,7 +82,7 @@ function getRestrictedSite(restrictedSites, includedSites, getUrl, site) {
 
     let longestInclude = '';
     for (let site of includedSites) {
-        if (urlNoProtocol.startsWith(site) && site.length > longestInclude.length) {
+        if (urlCleaned.startsWith(site) && site.length > longestInclude.length) {
             longestInclude = site;
         }
     }
