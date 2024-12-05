@@ -11,10 +11,12 @@
 
         <p id="site-name"></p>
 
-        <input type="text" id="unpause-duration" class="unpause-hidden" placeholder="Unpause minutes"/><br><br>
-        <label>Solve the problem:<div id="problem-statement"></div></label>
-        <input type="text" id="problem-solution" class="unpause-hidden" placeholder="Solution"/>
-        <input type="button" id="unpause-button" class="unpause-hidden" value="unpause?"/>
+        <form id="problem-form">
+            <input type="text" id="unpause-duration" class="unpause-hidden" placeholder="Unpause minutes"/><br><br>
+            <label>Solve the problem:<div id="problem-statement"></div></label>
+            <input type="text" id="problem-solution" class="unpause-hidden" placeholder="Solution"/>
+            <input type="submit" id="unpause-button" class="unpause-hidden" value="unpause?"/>
+        </form>
     </div>
 
     <script src="pause.js"></script>

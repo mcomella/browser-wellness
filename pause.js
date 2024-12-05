@@ -4,6 +4,7 @@ const unpauseHiddenElements = document.getElementsByClassName('unpause-hidden');
 const unpauseButton = document.getElementById('unpause-button');
 const unpauseDurationText = document.getElementById('unpause-duration');
 const siteNameElement = document.getElementById('site-name');
+const problemFormElement = document.getElementById('problem-form');
 const problemStatementElement = document.getElementById('problem-statement');
 const problemSolutionElement = document.getElementById('problem-solution');
 
@@ -85,5 +86,8 @@ function generateProblem() {
 
 siteNameElement.innerText = getSiteName(); // TODO: is duplicated with unpause logic.
 // setAnimations();
-unpauseButton.addEventListener('click', unpauseSite);
+problemFormElement.addEventListener('submit', e => {
+    e.preventDefault();
+    unpauseSite(e);
+});
 generateProblem();
