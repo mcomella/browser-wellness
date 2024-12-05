@@ -13,22 +13,41 @@ function maybeRedirectRequest(request) {
         return;
     }
 
-    // This logic is duplicated for pause in getUserPausedSiteFromUrl.
-    const isSiteBlocked = getRestrictedSite(userBlockedSites, userBlockedIncludes, (s) => s, request.url);
-    if (isSiteBlocked) {
-        return {redirectUrl: blockedUrl};
+    const redirectUrl = getRedirectUrl(request.url);
+    if (redirectUrl) {
+        return {redirectUrl: redirectUrl};
+    }
+}
+
+async function onHistoryStateUpdated(details) {
+    if (details.frameId !== 0) { // we only look at top-level browsing context.
+        return;
     }
 
-    const userPausedSite = getUserPausedSiteFromUrl(request.url);
+    const redirectUrl = getRedirectUrl(details.url);
+    if (redirectUrl) {
+        browser.tabs.update(details.tabId, {
+            url: redirectUrl,
+        });
+    }
+}
+
+function getRedirectUrl(url) {
+    // This logic is duplicated for pause in getUserPausedSiteFromUrl.
+    const isSiteBlocked = getRestrictedSite(userBlockedSites, userBlockedIncludes, (s) => s, url);
+    if (isSiteBlocked) {
+        return blockedUrl;
+    }
+
+    const userPausedSite = getUserPausedSiteFromUrl(url);
     const isSitePaused = userPausedSite && userPausedSite.unpauseUntil < new Date();
     if (!isSitePaused) {
         return;
     }
 
-    // TODO: remove urls from history
-    const encodedRequestUrl = encodeURI(request.url);
+    const encodedRequestUrl = encodeURI(url);
     const redirectUrl = pauseUrl + '?request=' + encodedRequestUrl;
-    return {redirectUrl: redirectUrl};
+    return redirectUrl;
 }
 
 function getRestrictedSite(restrictedSites, includedSites, getUrl, site) {
@@ -125,3 +144,6 @@ browser.webRequest.onBeforeRequest.addListener(
     {urls: ["<all_urls>"]}, // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns
     ["blocking"]
 );
+
+// TODO: we can add a URL filter which may be more performant.
+browser.webNavigation.onHistoryStateUpdated.addListener(onHistoryStateUpdated);
