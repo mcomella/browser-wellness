@@ -75,7 +75,12 @@ function generateProblem() {
 
     problemSolution = values.reduce((acc, v) => acc + v, 0);
 
-    problemStatementElement.textContent = 'Solve the problem: ' + values.join(' + ');
+    problemStatementElement.replaceChildren();
+    for (let i = 0; i < values.length - 1; i++) {
+        problemStatementElement.append(values[i]);
+        problemStatementElement.append(document.createElement('br'));
+    }
+    problemStatementElement.append('+ ' + values[values.length - 1]);
 }
 
 siteNameElement.innerText = getSiteName(); // TODO: is duplicated with unpause logic.
