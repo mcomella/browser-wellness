@@ -1,8 +1,10 @@
 # browser-wellness
-A Firefox add-on to conditionally block websites to help with digital wellness, specific to my own needs 
+A Firefox add-on to conditionally block websites to help with digital wellness, specific to my own needs
 
 ## Development
-Open `about:debugging` and "Load temporary add-on".
+Either:
+- open `about:debugging` and "Load temporary add-on".
+- run `npx web-ext run` to use the add-on in a development profile/instance
 
 ## Signing
 After installing dependencies, run:
